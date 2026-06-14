@@ -1,0 +1,6 @@
+{
+  "name": "Tes Kepribadian Mendalam",
+  "description": "Tes psikologi mendalam yang memetakan tipe MBTI berbasis fungsi kognitif, Enneagram, Big Five, Temperamen, Socionics, dan dinamika kepribadian komprehensif lainnya.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
