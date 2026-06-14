@@ -1355,64 +1355,114 @@ function generateAllQuestions(): Question[] {
 
       const questionText = `${person} tiba-tiba ${action} saat kalian sedang berada ${place}. Seketika itu juga, ${hurt}. Apa reaksi pertamamu sebelum sempat menyaring perilaku?`;
 
-      // Define natural human-options that correspond perfectly to MBTI cognitive functions
-      // option 1: Ni/Si (Internal processing of meaning/memory)
-      // option 2: Ne/Se (External exploration or physical engagement)
-      // option 3: Fi/Ti (Internal valuation of core truth/principles)
-      // option 4: Fe/Te (Social harmony repair or pragmatic structural restoration)
+      // Determine 4 completely distinct cognitive functions for the choices to prevent overlaps and assure perfect variety
+      const fa = functionsList[i % 8];
+      const fb = functionsList[(i + 2) % 8];
+      const fc = functionsList[(i + 4) % 8];
+      const fd = functionsList[(i + 6) % 8];
 
-      const opt1Text = `Berdiam diam seraya ${f1 === 'Ni' || f1 === 'Ti' ? 'merenungkan arti terselubung jangka panjang dari peristiwa kejam ini bagi kelangsungan hidupku.' : 'mengingat dengan runtut detail pelanggaran janji atau aturan adat kesopanan terdahulu.'}`;
-      const opt2Text = `Seketika ${f2 === 'Ne' || f2 === 'Se' ? 'melompat memikirkan skenario alternatif gila untuk membalas sindirannya dengan humor terselubung.' : 'bergerak memajukan tubuh secara fisik demi menatap wajahnya serta meminta penjelasan langsung.'}`;
-      const opt3Text = `Menahan gejolak emosi di ulu dada, ${f1 === 'Fi' ? 'mengurung kesedihan pribadiku rapat-rapat seraya menjauhi tempat obrolan agar keaslian jiwaku selamat.' : 'membedah secara dingin kesimpulan logis dari tindakannya yang tidak sejalan dengan akal sehat.'}`;
-      const opt4Text = `Langsung ${f2 === 'Fe' ? 'tersenyum palsu seraya meminta maaf demi menenangkan amarah kelompok agar suasana hangat kembali rukun.' : 'menuntut pertanggungjawaban terukur atau memangkas pembagian kerjanya agar kepemimpinan tetap stabil.'}`;
+      // Deeply immersive, context-adaptive storytelling options mapped precisely to the respective functions
+      const getOptionText = (f: CognitiveFunction): string => {
+        switch (f) {
+          case 'Ni':
+            return `Memilih berdiam diri, pikiranku langsung memproyeksikan makna jangka panjang atau mencari pola tersembunyi dari perlakuan ${person} ini bagi jalan hidupku ke depan.`;
+          case 'Ne':
+            return `Seketika meluaskan pikiran, mengalihkan fokus pada berbagai alternatif kemungkinan kreatif atau mencairkan situasi dengan kata-kata humor dan lelucon tak terduga.`;
+          case 'Si':
+            return `Menggali arsip ingatan masa lalu secara jeli, membandingkan tindakan ${person} yang melanggar adat kesopanan dengan standar aturan sosial tertulis yang kupahami.`;
+          case 'Se':
+            return `Bereaksi spontan menuruti insting fisik saat itu juga, menatap langsung mata ${person} demi menuntut pertanggungjawaban nyata atau menyelesaikan konfrontasi secara terbuka.`;
+          case 'Fi':
+            return `Menarik diri ke dalam keheningan terdalam, menyimpan duka lara emosional ini sendiri di dasar jiwa demi mempertahankan kesucian nilai moral personal.`;
+          case 'Fe':
+            return `Segera memasang wajah ramah atau meminta maaf demi meredam amarah, berpartisipasi menjaga keharmonisan dan perasaan orang lain agar relasi sosial tetap aman.`;
+          case 'Ti':
+            return `Membedah motif perilakunya secara dingin dan mengumpulkan fakta logis di dalam kepala, melihat masalah ini sebagai ketidakselarasan sistemik tanpa terpancing amarah.`;
+          case 'Te':
+            return `Mengambil kendali dialog secara tegas dan taktis, menegakkan batas tatanan aturan praktis yang objektif agar ia paham konsekuensi perbuatannya secara nyata.`;
+          default:
+            return `Menenangkan diri secara pribadi demi menyusun kekuatan mental yang seimbang menghadapi perlakuan mereka.`;
+        }
+      };
+
+      const getSecondarySignal = (f: CognitiveFunction): CognitiveFunction => {
+        const secondaryMap: Record<CognitiveFunction, CognitiveFunction> = {
+          Ni: "Ti",
+          Ne: "Fi",
+          Si: "Te",
+          Se: "Fi",
+          Fi: "Ne",
+          Fe: "Si",
+          Ti: "Se",
+          Te: "Ni"
+        };
+        return secondaryMap[f] || "Ti";
+      };
+
+      const getEnneagramScores = (f: CognitiveFunction): Record<EnneagramType, number> => {
+        const emptyScores: Record<EnneagramType, number> = {
+          "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0
+        };
+        const map: Record<CognitiveFunction, Partial<Record<EnneagramType, number>>> = {
+          Ni: { "5": 3, "1": 1, "4": 1 },
+          Ne: { "7": 3, "3": 1 },
+          Si: { "6": 3, "1": 2 },
+          Se: { "8": 2, "7": 2 },
+          Fi: { "4": 3, "9": 1 },
+          Fe: { "2": 3, "9": 2 },
+          Ti: { "5": 3, "6": 1 },
+          Te: { "8": 3, "3": 2 }
+        };
+        return { ...emptyScores, ...(map[f] || {}) };
+      };
 
       result.push({
         id: qId,
         phase: "main",
-        target: `Navigasi batiniah ${f1} vs ${f2} dalam krisis sosial`,
+        target: `Navigasi kognitif dinamik ${fa} vs ${fb} dalam pertahanan batin`,
         contextType: "krisis interpersonal",
         pressureType: "luka batin mendalam",
         text: questionText,
         reminder: "Pilih reaksi pertamamu yang paling sering terjadi saat kesal, bukan cara ideal setelah tenang.",
         options: [
           {
-            text: opt1Text,
-            primarySignal: f1,
-            secondarySignal: "Ti",
-            evidenceText: `Memilih respons pertama kognitif ${f1} dalam pertahanan batin.`,
+            text: getOptionText(fa),
+            primarySignal: fa,
+            secondarySignal: getSecondarySignal(fa),
+            evidenceText: `Memilih respons pertama kognitif ${fa} dalam perlindungan ego batiniah.`,
             scores: {
-              functions: { [f1]: 3, Ti: 1 },
-              enneagram: { [enn]: 3, "5": 1 }
+              functions: { [fa]: 3, [getSecondarySignal(fa)]: 1 },
+              enneagram: getEnneagramScores(fa)
             }
           },
           {
-            text: opt2Text,
-            primarySignal: f2,
-            secondarySignal: "Se",
-            evidenceText: `Memilih dorongan dinamis eksternal ${f2} dalam krisis sosial.`,
+            text: getOptionText(fb),
+            primarySignal: fb,
+            secondarySignal: getSecondarySignal(fb),
+            evidenceText: `Mengambil langkah reaksi pertahanan kognitif ${fb} terhadap konflik eksternal.`,
             scores: {
-              functions: { [f2]: 3, Se: 1 },
-              enneagram: { "7": 3, "8": 1 }
+              functions: { [fb]: 3, [getSecondarySignal(fb)]: 1 },
+              enneagram: getEnneagramScores(fb)
             }
           },
           {
-            text: opt3Text,
-            primarySignal: f1 === "Fi" ? "Fi" : "Ti",
-            secondarySignal: "Si",
-            evidenceText: `Melakukan perlindungan diri personal melalui energi ${f1 === "Fi" ? "Feeling" : "Thinking"}.`,
+            text: getOptionText(fc),
+            primarySignal: fc,
+            secondarySignal: getSecondarySignal(fc),
+            evidenceText: `Mengharmoniskan batin lewat penyaluran fungsional ${fc}.`,
             scores: {
-              functions: { [f1 === "Fi" ? "Fi" : "Ti"]: 3, Si: 1 },
-              enneagram: { "4": 3, "9": 1 }
+              functions: { [fc]: 3, [getSecondarySignal(fc)]: 1 },
+              enneagram: getEnneagramScores(fc)
             }
           },
           {
-            text: opt4Text,
-            primarySignal: f2 === "Fe" ? "Fe" : "Te",
-            secondarySignal: "Ni",
-            evidenceText: `Mengambil jalan keluar strategis struktural sosial ${f2 === "Fe" ? "Fe" : "Te"}.`,
+            text: getOptionText(fd),
+            primarySignal: fd,
+            secondarySignal: getSecondarySignal(fd),
+            evidenceText: `Mengandalkan dorongan kognitif stabil berbasis ${fd} untuk resolusi internal.`,
             scores: {
-              functions: { [f2 === "Fe" ? "Fe" : "Te"]: 3, Ni: 1 },
-              enneagram: { "2": 3, "1": 2 }
+              functions: { [fd]: 3, [getSecondarySignal(fd)]: 1 },
+              enneagram: getEnneagramScores(fd)
             }
           }
         ]
